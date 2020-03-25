@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
-import 'package:esaver/screens/controls.dart';
+//import 'package:esaver/screens/locations.dart';
+import 'package:esaver/screens/locate.dart';
 import 'package:esaver/classes/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,6 +14,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginState extends State<LoginScreen> {
+
+  ScreenUtil _instance = new ScreenUtil();
+
   bool showSpinner = false;
   bool _visible;
   String _userid;
@@ -28,19 +32,17 @@ class _LoginState extends State<LoginScreen> {
     _visible = false;
   }
 
-  _setToken (String token) async{
+  _setToken(String token) async {
     SharedPreferences _prefs = await SharedPreferences.getInstance();
-   
+
     _prefs.setString('token', token);
   }
 
   @override
   Widget build(BuildContext context) {
-    ScreenUtil.instance = ScreenUtil(width: 1140, height: 2880)..init(context);
 
     return SafeArea(
       child: Scaffold(
-        //resizeToAvoidBottomInset: false,
         backgroundColor: Colors.white,
         body: ModalProgressHUD(
           inAsyncCall: showSpinner,
@@ -67,7 +69,7 @@ class _LoginState extends State<LoginScreen> {
                           },
                           style: TextStyle(
                               color: Colors.blue,
-                              fontSize: ScreenUtil.instance.setSp(60)),
+                              fontSize: 20),
                           maxLines: 1,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
@@ -90,7 +92,7 @@ class _LoginState extends State<LoginScreen> {
                           obscureText: _visible == true ? false : true,
                           style: TextStyle(
                               color: Colors.blue,
-                              fontSize: ScreenUtil.instance.setSp(60)),
+                              fontSize: 20),
                           maxLines: 1,
                           decoration: InputDecoration(
                             prefixIcon: Icon(Icons.lock, color: Colors.blue),
@@ -106,11 +108,10 @@ class _LoginState extends State<LoginScreen> {
                                       : Icons.visibility_off,
                                   color: Colors.blue,
                                 )),
-                            //border: InputBorder.none,
                             hintText: "Password",
                             hintStyle: TextStyle(
                                 color: Colors.blue,
-                                fontSize: ScreenUtil.instance.setSp(60)),
+                                fontSize: 20),
                           ),
                         ),
                       ),
@@ -119,7 +120,7 @@ class _LoginState extends State<LoginScreen> {
                           "Forgot Password ?",
                           style: TextStyle(
                               color: Colors.blue,
-                              fontSize: ScreenUtil.instance.setSp(50),
+                              fontSize: 20,
                               fontWeight: FontWeight.bold),
                           textAlign: TextAlign.right,
                         ),
@@ -128,7 +129,7 @@ class _LoginState extends State<LoginScreen> {
                         },
                       ),
                       SizedBox(
-                        height: ScreenUtil.instance.setHeight(200),
+                        height: 40,
                         width: double.infinity,
                         child: RaisedButton(
                           shape: RoundedRectangleBorder(
@@ -139,7 +140,7 @@ class _LoginState extends State<LoginScreen> {
                             "Login",
                             style: TextStyle(
                                 color: Colors.white,
-                                fontSize: ScreenUtil.instance.setSp(60)),
+                                fontSize: 20),
                           ),
                           onPressed: () async {
                             setState(() {
@@ -193,7 +194,7 @@ class _LoginState extends State<LoginScreen> {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => Controls()));
+                                      builder: (context) => Locate()));
                             }
                           },
                         ),

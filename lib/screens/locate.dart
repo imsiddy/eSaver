@@ -1,3 +1,4 @@
+import 'package:esaver/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:esaver/classes/Location.dart';
 import 'package:http/http.dart' as http;
@@ -19,11 +20,16 @@ Future<String> getToken() async {
   return _prefs.getString('token').toString();
 }
 
+  _setToken (String token) async{
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    _prefs.setString('token', token);
+  }
+
 Future<List<Location>> _getLocation() async {
   var response = await http
       .get(Uri.encodeFull('https://smartboi.herokuapp.com/api/user'), headers: {
     'Content-Type': 'application/json',
-    'Authorization': 'Token 85e1212cb75147a0a316175b5ec22d4bb07da052',
+    'Authorization': 'Token 3e2cc1c53e6fe432ec921af44e8702e862c5b735',
   });
 
   var jsonData = json.decode(response.body)['locations'];
@@ -44,7 +50,36 @@ class _LocateState extends State<Locate> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: Text("Locations")),
+        appBar: AppBar(title: Text("Locations"),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.launch),
+            tooltip: 'Confirm Sign Out',
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                        title: Text('Sign out'),
+                        content: Text('Would you like to sign out?'),
+                        actions: <Widget>[
+                          FlatButton(
+                            child: Text('Cancel'),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          FlatButton(
+                              child: Text('Yes'),
+                              onPressed: () {
+                                
+                                _setToken(null);
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                                Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginScreen()));
+                              })
+                        ],
+                      ));
+            },
+          )
+        ],),
         body: ListView(
           children: <Widget>[
             Container(

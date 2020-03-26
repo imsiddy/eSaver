@@ -1,19 +1,51 @@
+import 'package:esaver/classes/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:async';
 
 class Permissions extends StatefulWidget {
+  final int id;
   final String location;
-  Permissions(this.location);
+  Permissions(this.id, this.location);
 
   @override
-  _PermissionsState createState() => _PermissionsState(this.location);
+  _PermissionsState createState() => _PermissionsState(this.id, this.location);
 }
 
+Future<String> getToken() async {
+  final _prefs = await SharedPreferences.getInstance();
+  return _prefs.getString('token');
+}
 class _PermissionsState extends State<Permissions> {
+  int id;
   String location;
   String grantUserId = '17ce084';
 
-  _PermissionsState(this.location);
+  _PermissionsState(this.id, this.location);
+
+  Future<List<User>> _getUsers() async {
+  String _token = await getToken(); 
+  var response = await http
+      .get(Uri.encodeFull('https://smartboi.herokuapp.com/api/location/$id'), headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Token $_token',
+  });
+
+  var jsonData = json.decode(response.body)['users'];
+  print(jsonData);
+
+  List<User> users = [];
+
+  for (var u in jsonData) {
+    User user = User(
+        u['id'], u['name'], u['username'], u['locations']);
+    users.add(user);
+  }
+  return users;
+}
 
   @override
   Widget build(BuildContext context) {
@@ -98,17 +130,29 @@ class _PermissionsState extends State<Permissions> {
                   thickness: 5,
                 ),
 
-                ListView.builder(
+                FutureBuilder(
+                  future: _getUsers(),
+                  builder: (BuildContext context, AsyncSnapshot snapshot){
+                    if(snapshot.data == null){
+                      return Container(
+                        child: Center(
+                          child: Text('Loading...'),
+                        ),
+                      );
+                    }
+                    else{
+                      return ListView.builder(
                   physics: ScrollPhysics(),
                     shrinkWrap: true,
-                    itemCount: 5,
+                    itemCount: snapshot.data.length,
                     itemBuilder: (BuildContext context, int index) {
+                      print(snapshot.data[index].username);
                       return Column(
                         children: <Widget>[
                           ListTile(
                             leading: Icon(Icons.person, size: 25, color: Colors.grey.shade500,),
                             title: Text(
-                              '17ce084',
+                              snapshot.data[index].username,
                               style: TextStyle(fontSize: 18),
                             ),
                             trailing: IconButton(
@@ -128,8 +172,11 @@ class _PermissionsState extends State<Permissions> {
                           )
                         ],
                       );
-                    }),
+                    });
+                    }
+                  }),
 
+                
               ],
             )),
       ),

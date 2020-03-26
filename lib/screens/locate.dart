@@ -15,21 +15,23 @@ class Locate extends StatefulWidget {
 }
 
 Future<String> getToken() async {
-  SharedPreferences _prefs = await SharedPreferences.getInstance();
-  print(_prefs.getString('token').toString());
-  return _prefs.getString('token').toString();
+  final _prefs = await SharedPreferences.getInstance();
+  return _prefs.getString('token');
 }
 
   _setToken (String token) async{
-    SharedPreferences _prefs = await SharedPreferences.getInstance();
-    _prefs.setString('token', token);
+    final _prefs = await SharedPreferences.getInstance();
+    await _prefs.setString('token', token);
   }
 
 Future<List<Location>> _getLocation() async {
+  String _token = await getToken(); 
+  print('Token $_token');
+  print('----------------------------');
   var response = await http
       .get(Uri.encodeFull('https://smartboi.herokuapp.com/api/user'), headers: {
     'Content-Type': 'application/json',
-    'Authorization': 'Token 3e2cc1c53e6fe432ec921af44e8702e862c5b735',
+    'Authorization': 'Token $_token',
   });
 
   var jsonData = json.decode(response.body)['locations'];
@@ -41,7 +43,6 @@ Future<List<Location>> _getLocation() async {
         l['id'], l['location_name'], l['incharge_name'], l['connections']);
     locations.add(locate);
   }
-  print(locations.length);
   return locations;
 }
 
@@ -165,7 +166,7 @@ class _LocateState extends State<Locate> {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => Permissions(
-                                                  snapshot.data[index]
+                                                  snapshot.data[index].id, snapshot.data[index]
                                                       .location_name)),
                                         );
                                       },

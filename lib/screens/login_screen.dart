@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
-//import 'package:esaver/screens/locations.dart';
 import 'package:esaver/screens/locate.dart';
 import 'package:esaver/classes/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,8 +12,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginState extends State<LoginScreen> {
-
-  ScreenUtil _instance = new ScreenUtil();
 
   bool showSpinner = false;
   bool _visible;
@@ -33,8 +29,7 @@ class _LoginState extends State<LoginScreen> {
   }
 
   _setToken(String token) async {
-    SharedPreferences _prefs = await SharedPreferences.getInstance();
-
+    final _prefs = await SharedPreferences.getInstance();
     _prefs.setString('token', token);
   }
 
@@ -120,7 +115,7 @@ class _LoginState extends State<LoginScreen> {
                           "Forgot Password ?",
                           style: TextStyle(
                               color: Colors.blue,
-                              fontSize: 20,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold),
                           textAlign: TextAlign.right,
                         ),

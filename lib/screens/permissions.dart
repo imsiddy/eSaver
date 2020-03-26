@@ -19,33 +19,79 @@ Future<String> getToken() async {
   final _prefs = await SharedPreferences.getInstance();
   return _prefs.getString('token');
 }
+
 class _PermissionsState extends State<Permissions> {
   int id;
   String location;
-  String grantUserId = '17ce084';
+  String grantUserId;
+  List accessingUsers = [];
 
   _PermissionsState(this.id, this.location);
 
-  Future<List<User>> _getUsers() async {
-  String _token = await getToken(); 
-  var response = await http
-      .get(Uri.encodeFull('https://smartboi.herokuapp.com/api/location/$id'), headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Token $_token',
-  });
+  List<User> grantedUsers;
 
-  var jsonData = json.decode(response.body)['users'];
-  print(jsonData);
-
-  List<User> users = [];
-
-  for (var u in jsonData) {
-    User user = User(
-        u['id'], u['name'], u['username'], u['locations']);
-    users.add(user);
+  @override
+  void initState() {
+    super.initState();
+    setState(() async {
+      grantedUsers = await _getUsers();
+    });
   }
-  return users;
-}
+
+  Future<List<User>> _getUsers() async {
+    String _token = await getToken();
+
+    var response = await http.get(
+        Uri.encodeFull('https://smartboi.herokuapp.com/api/location/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $_token',
+        });
+
+    var jsonData = json.decode(response.body)['users'];
+    List<User> users = [];
+
+    for (var u in jsonData) {
+      User user = User(u['id'], u['name'], u['username'], u['locations']);
+      users.add(user);
+    }
+    return users;
+  }
+
+  findUserId() async {
+    String _token = await getToken();
+
+    var response = await http.get(
+        Uri.encodeFull('https://smartboi.herokuapp.com/api/userlist'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $_token',
+        });
+
+    var jsonData = json.decode(response.body)['users'];
+    for (var u in jsonData) {
+      if (u['username'] == grantUserId) {
+        accessingUsers.add(u['id']);
+        setState(() {
+          grantedUsers.add(u);
+        });
+      }
+    }
+  }
+
+  _grantUser() async {
+    await findUserId();
+    String jsonData = '{"users": $accessingUsers}';
+    String _token = await getToken();
+    var response = await http.put(
+        'https://smartboi.herokuapp.com/api/location/$id/addusers',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $_token',
+        },
+        body: jsonData);
+    print(response.body);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +104,6 @@ class _PermissionsState extends State<Permissions> {
             margin: EdgeInsets.all(15.0),
             child: ListView(
               children: <Widget>[
-
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -69,7 +114,6 @@ class _PermissionsState extends State<Permissions> {
                     ),
                   ),
                 ),
-
                 Container(
                   // margin: EdgeInsets.all(10.0),
                   padding: EdgeInsets.only(top: 10, bottom: 15),
@@ -95,7 +139,6 @@ class _PermissionsState extends State<Permissions> {
                     ),
                   ),
                 ),
-
                 SizedBox(
                   height: 45,
                   width: double.infinity,
@@ -108,13 +151,14 @@ class _PermissionsState extends State<Permissions> {
                       "Grant Permission",
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      _grantUser();
+                    },
                   ),
                 ),
-
-              SizedBox(
-                height: 30,
-              ),
+                SizedBox(
+                  height: 30,
+                ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -129,54 +173,55 @@ class _PermissionsState extends State<Permissions> {
                   color: Colors.blue,
                   thickness: 5,
                 ),
-
                 FutureBuilder(
-                  future: _getUsers(),
-                  builder: (BuildContext context, AsyncSnapshot snapshot){
-                    if(snapshot.data == null){
-                      return Container(
-                        child: Center(
-                          child: Text('Loading...'),
-                        ),
-                      );
-                    }
-                    else{
-                      return ListView.builder(
-                  physics: ScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: snapshot.data.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      print(snapshot.data[index].username);
-                      return Column(
-                        children: <Widget>[
-                          ListTile(
-                            leading: Icon(Icons.person, size: 25, color: Colors.grey.shade500,),
-                            title: Text(
-                              snapshot.data[index].username,
-                              style: TextStyle(fontSize: 18),
-                            ),
-                            trailing: IconButton(
-                              icon: Icon(
-                                Icons.delete,
-                                size: 25,
-                                color: Colors.grey.shade500,
-                              ),
-                              onPressed: () {
-                                setState(() {});
-                              },
-                            ),
+                    future: _getUsers(),
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.data == null) {
+                        return Container(
+                          child: Center(
+                            child: Text('Loading...'),
                           ),
-                          Divider(
-                            height: 1,
-                            color: Colors.grey.shade700,
-                          )
-                        ],
-                      );
-                    });
-                    }
-                  }),
-
-                
+                        );
+                      } else {
+                        return ListView.builder(
+                            physics: ScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: snapshot.data.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              print(snapshot.data[index].username);
+                              accessingUsers.add(snapshot.data[index].id);
+                              return Column(
+                                children: <Widget>[
+                                  ListTile(
+                                    leading: Icon(
+                                      Icons.person,
+                                      size: 25,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                    title: Text(
+                                      snapshot.data[index].username,
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                    trailing: IconButton(
+                                      icon: Icon(
+                                        Icons.delete,
+                                        size: 25,
+                                        color: Colors.grey.shade500,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ),
+                                  Divider(
+                                    height: 1,
+                                    color: Colors.grey.shade700,
+                                  )
+                                ],
+                              );
+                            });
+                      }
+                    }),
               ],
             )),
       ),

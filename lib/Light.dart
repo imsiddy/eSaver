@@ -3,7 +3,7 @@ import 'Location.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-import 'connection.dart';
+import 'connect.dart';
 import 'user.dart';
 
 class Lights extends StatefulWidget {
@@ -15,6 +15,11 @@ class Lights extends StatefulWidget {
   @override
   _LightsState createState() => _LightsState(this.id, this.location);
 }
+
+
+bool _likeVisible1 = true;
+bool _likeVisible2 = true;
+List<User> grantedUsers;
 
 class _LightsState extends State<Lights> {
   int id;
@@ -42,74 +47,114 @@ class _LightsState extends State<Lights> {
     }
     return connections;
   }
+
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(title: Text("Main Screen")),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () {
-            print("data");
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => null),
-            );
-          },
-        ),
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: Text("Main")),
         body: Container(
           color: Color(0xfff5f5f5),
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal:8.0),
-                child: Align(
+          child: Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Column(
+              children: <Widget>[
+                Align(
                   alignment: Alignment.topLeft,
-                  child: Text(
-                    "716-A",
-                    style: TextStyle(fontSize: 50),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 9.0),
+                    child: Text(
+                      "Location : ",
+                      style: TextStyle(fontSize: 25),
+                    ),
                   ),
                 ),
-              ),
-              Align(
-                alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 9.0),
-                  child: Text(
-                    "Lab",
-                    style: TextStyle(fontSize: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Align(
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      location,
+                      style: TextStyle(fontSize: 50),
+                    ),
                   ),
                 ),
-              ),
-              Divider(
-                indent: 25.0,
-                endIndent: 25.0,
-                thickness: 5.0,
-                color: Colors.black,
-              ),
-
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Card(
+                Divider(
+                  indent: 25.0,
+                  endIndent: 25.0,
+                  thickness: 5.0,
+                  color: Colors.black,
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  child: Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15.0),
                     ),
                     elevation: 10.0,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        ListTile(
-                          leading: Icon(Icons.album, size: 50),
-                          title: Text('Heart Shaker'),
-                          subtitle: Text('TWICE'),
-                          trailing: null,
-                        ),
-                      ],
-                    ),
+                    child: FutureBuilder(
+                        future: _getUsers(),
+                        builder:
+                            (BuildContext context, AsyncSnapshot snapshot) {
+                          if (snapshot.data == null) {
+                            return Container(
+                              child: Center(
+                                child: Text('Loading...'),
+                              ),
+                            );
+                          } else {
+                            return ListView.builder(
+                                physics: ScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: snapshot.data.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  print(snapshot.data[index].connection_name);
+                                  print(snapshot.data[index].is_high);
+                                  print(index);
+                                  print(snapshot.data[index].id);
+
+                                  return Column(
+                                    children: <Widget>[
+                                      ListTile(
+                                        leading: Icon(Icons.album, size: 25),
+                                        title: Text(snapshot
+                                            .data[index].connection_name),
+                                        trailing: Switch(
+                                          value: snapshot.data[index].is_high,
+                                          onChanged: (value) {
+                                            print(snapshot.data[index].is_high);
+                                            print("data must be here");
+                                            setState(
+                                              () {
+                                                 value = snapshot.data[ index].is_high;
+                                                //  _likeVisible1 = value;
+                                  
+                                              },
+                                            );
+                                            print(snapshot.data[index].is_high);
+                                            print("data be here");
+                                          },
+                                          activeTrackColor:
+                                              Colors.lightGreenAccent,
+                                          activeColor: Colors.green,
+                                        ),
+                                      ),
+                                      Divider(
+                                        height: 1,
+                                        color: Colors.grey.shade700,
+                                      )
+                                    ],
+                                  );
+                                });
+                          }
+                        }),
                   ),
-              ),
-              ListViewCard(),
-            ],
+                ),
+                // DisplayListView(), //data in static form if user want to fed input locally
+                // ListViewExample(),
+              ],
+            ),
           ),
         ),
       ),
@@ -117,48 +162,104 @@ class _LightsState extends State<Lights> {
   }
 }
 
-
-class ListViewCard extends StatelessWidget {
-  List<String> _listViewData = [
-    "A List View with many Text - Here's one!",
-    "A List View with many Text - Here's another!",
-    "A List View with many Text - Here's more!",
-    "A List View with many Text - Here's more!",
-    "A List View with many Text - Here's more!",
-  ];
-
+class ListViewExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-        children: <Widget>[
-          Container(
-            height: 250,
-            child: Card(
-              elevation: 3.0,
-              child: ListView(
-                padding: EdgeInsets.all(8.0),
-                //map List of our data to the ListView
-                children: _listViewData
-                    .map((data) => ListTile(title: Text(data)))
-                    .toList(),
-              ),
-            ),
-          ),
-          SizedBox(height: 15.0),
-          Container(
-            height: 250,
-            child: Card(
-              elevation: 3.0,
-              child: ListView(
-                padding: EdgeInsets.all(8.0),
-                //map List of our data to the ListView
-                children: _listViewData
-                    .map((data) => ListTile(title: Text(data)))
-                    .toList(),
-              ),
-            ),
+    return Container(
+      height: 500,
+      child: DisplayListView(),
+    );
+  }
+}
+
+class ListViewModel {
+  final String title;
+  final String subtitle;
+  final String avatarURL;
+
+  ListViewModel({this.title, this.subtitle, this.avatarURL});
+}
+
+List listViewData = [
+  ListViewModel(
+    title: "Group",
+    subtitle: "Group Category",
+    avatarURL: "1",
+  ),
+  ListViewModel(
+    title: "Group",
+    subtitle: "Group Category",
+    avatarURL: "2",
+  ),
+  ListViewModel(
+    title: "Group",
+    subtitle: "Group Category",
+    avatarURL: "3",
+  ),
+  ListViewModel(
+    title: "Group",
+    subtitle: "Group Category",
+    avatarURL: "4",
+  ),
+  ListViewModel(
+    title: "Group",
+    subtitle: "Group Category",
+    avatarURL: "5",
+  ),
+  ListViewModel(
+    title: "Group",
+    subtitle: "Group Category",
+    avatarURL: "6",
+  ),
+  ListViewModel(
+    title: "Group",
+    subtitle: "Group Category",
+    avatarURL: "7",
+  ),
+  ListViewModel(
+    title: "Group",
+    subtitle: "Group Category",
+    avatarURL: "8",
+  ),
+  ListViewModel(
+    title: "Group",
+    subtitle: "Group Category",
+    avatarURL: "9",
+  ),
+  ListViewModel(
+    title: "Group",
+    subtitle: "Group Category",
+    avatarURL: "10",
+  ),
+];
+
+class DisplayListView extends StatefulWidget {
+  @override
+  _DisplayListViewState createState() => _DisplayListViewState();
+}
+
+class _DisplayListViewState extends State {
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      physics: ScrollPhysics(),
+      shrinkWrap: true,
+      itemCount: listViewData.length,
+      itemBuilder: (context, int i) => Column(
+        children: [
+          new ListTile(
+            leading: new CircleAvatar(child: Text(listViewData[i].avatarURL)),
+            title: new Text(listViewData[i].title),
+            subtitle: new Text(listViewData[i].subtitle),
+            onTap: () {},
+            onLongPress: () {
+              print(
+                Text("Long Pressed"),
+              );
+            },
           ),
         ],
+      ),
     );
   }
 }

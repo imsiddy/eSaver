@@ -1,13 +1,47 @@
 import 'package:flutter/material.dart';
+import 'Location.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'dart:convert';
+import 'connection.dart';
+import 'user.dart';
 
 class Lights extends StatefulWidget {
-  Lights({Key key}) : super(key: key);
+  final int id;
+  final String location;
+
+  Lights(this.id, this.location);
 
   @override
-  _LightsState createState() => _LightsState();
+  _LightsState createState() => _LightsState(this.id, this.location);
 }
 
 class _LightsState extends State<Lights> {
+  int id;
+  String location;
+  String grantUserId = '17ce084';
+
+  _LightsState(this.id, this.location);
+
+  Future<List<Connection>> _getUsers() async {
+    var response = await http.get(
+        Uri.encodeFull('https://smartboi.herokuapp.com/api/location/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+        });
+
+    var jsonData = json.decode(response.body)['connections'];
+    print(jsonData);
+
+    List<Connection> connections = [];
+
+    for (var u in jsonData) {
+      Connection connection = Connection( u['id'], u['connection_name'], u['connection_pin'], u['is_high']);
+      connections.add(connection);
+    }
+    return connections;
+  }
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

@@ -3,6 +3,7 @@ import 'Location.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
+import 'api_response.dart';
 import 'connect.dart';
 import 'user.dart';
 
@@ -46,6 +47,43 @@ class _LightsState extends State<Lights> {
       connections.add(connection);
     }
     return connections;
+  }
+
+  _updateAlbum(int id, bool item) async {
+  var response = await http.put(
+    'https://smartboi.herokuapp.com/api/connection/$id',
+    headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+        },
+    body: 'is_high',
+    );
+
+  // if (response.statusCode == 200) {
+  //   // If the server did return a 200 OK response,
+  //   // then parse the JSON.
+  //   return Album.fromJson(json.decode(response.body));
+  // } else {
+  //   // If the server did not return a 200 OK response,
+  //   // then throw an exception.
+  //   throw Exception('Failed to update album.');
+  // }
+}
+
+updateNote(int id, bool item) async {
+  String jsonData = '{"users": "is_high": $item}';
+    var response = await  http.put('https://smartboi.herokuapp.com/api/connection/$id' , headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+        }, body: json.encode(jsonData));
+    //     .then((data) 
+    //     {
+    //   if (data.statusCode == 204) {
+    //     return APIResponse<bool>(data: true);
+    //   }
+    //   return APIResponse<bool>(error: true, errorMessage: 'An error occured');
+    // },)
+    // .catchError((_) => APIResponse<bool>(error: true, errorMessage: 'An error occured'));
   }
 
 
@@ -109,10 +147,10 @@ class _LightsState extends State<Lights> {
                                 shrinkWrap: true,
                                 itemCount: snapshot.data.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  print(snapshot.data[index].connection_name);
-                                  print(snapshot.data[index].is_high);
-                                  print(index);
-                                  print(snapshot.data[index].id);
+                                  // print(snapshot.data[index].connection_name);
+                                  // print(snapshot.data[index].is_high);
+                                  // print(index);
+                                  // print(snapshot.data[index].id);
 
                                   return Column(
                                     children: <Widget>[
@@ -124,14 +162,16 @@ class _LightsState extends State<Lights> {
                                           value: snapshot.data[index].is_high,
                                           onChanged: (value) {
                                             print(snapshot.data[index].is_high);
+                                            print(value);
                                             print("data must be here");
                                             setState(
                                               () {
                                                  value = snapshot.data[ index].is_high;
+                                                 _updateAlbum(snapshot.data[index].id, value);
                                                 //  _likeVisible1 = value;
-                                  
                                               },
                                             );
+                                            print(value);
                                             print(snapshot.data[index].is_high);
                                             print("data be here");
                                           },

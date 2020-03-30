@@ -109,10 +109,10 @@ class _LightsState extends State<Lights> {
                                 shrinkWrap: true,
                                 itemCount: snapshot.data.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  print(snapshot.data[index].connection_name);
-                                  print(snapshot.data[index].is_high);
+                                  // print(snapshot.data[index].connection_name);
+                                  // print(snapshot.data[index].is_high);
                                   print(index);
-                                  print(snapshot.data[index].id);
+                                  // print(snapshot.data[index].id);
 
                                   return Column(
                                     children: <Widget>[
@@ -124,7 +124,7 @@ class _LightsState extends State<Lights> {
                                           value: snapshot.data[index].is_high,
                                           onChanged: (value) {
                                             print(snapshot.data[index].is_high);
-                                            print("data must be here");
+                                            print("main file data must be here");
                                             setState(
                                               () {
                                                  value = snapshot.data[ index].is_high;
@@ -133,7 +133,7 @@ class _LightsState extends State<Lights> {
                                               },
                                             );
                                             print(snapshot.data[index].is_high);
-                                            print("data be here");
+                                            print("main file data be here");
                                           },
                                           activeTrackColor:
                                               Colors.lightGreenAccent,

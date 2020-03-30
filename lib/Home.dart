@@ -1,10 +1,12 @@
-import 'package:esever/Light.dart';
+// import 'package:esever/Light.dart';
+import 'package:esever/lights.dart';
 import 'package:flutter/material.dart';
-import 'Light.dart';
+import 'Location.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'dart:convert';
 
 class MyApp extends StatefulWidget {
-  MyApp({Key key}) : super(key: key);
-
   @override
   _MyAppState createState() => _MyAppState();
 }
@@ -13,6 +15,27 @@ bool _likeVisible1 = true;
 bool _likeVisible2 = true;
 
 class _MyAppState extends State<MyApp> {
+  Future<List<Location>> _getLocation() async {
+    print('----------------------------');
+    var response = await http.get(
+        Uri.encodeFull('https://smartboi.herokuapp.com/api/user'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+        });
+
+    var jsonData = json.decode(response.body)['locations'];
+
+    List<Location> locations = [];
+
+    for (var l in jsonData) {
+      Location locate = Location(
+          l['id'], l['location_name'], l['incharge_name'], l['connections']);
+      locations.add(locate);
+    }
+    return locations;
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -22,10 +45,6 @@ class _MyAppState extends State<MyApp> {
           child: Icon(Icons.add),
           onPressed: () {
             print("data");
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => Lights()),
-            );
           },
         ),
         body: ListView(
@@ -60,7 +79,11 @@ class _MyAppState extends State<MyApp> {
                     Padding(
                       padding: const EdgeInsets.only(
                           top: 8.0, bottom: 8.0, left: 12.0, right: 12.0),
-                      child: Container(
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25.0),
+                      ),
+                      elevation: 10.0,
                         child: TextFormField(
                           decoration: InputDecoration(
                             fillColor: Colors.white,
@@ -87,7 +110,7 @@ class _MyAppState extends State<MyApp> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: Text(
-                          "Favorite",
+                          "Location",
                           style: TextStyle(fontSize: 20),
                         ),
                       ),
@@ -97,84 +120,46 @@ class _MyAppState extends State<MyApp> {
                         borderRadius: BorderRadius.circular(15.0),
                       ),
                       elevation: 10.0,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          ListTile(
-                            leading: Icon(Icons.album, size: 50),
-                            title: Text('Heart Shaker'),
-                            subtitle: Text('TWICE'),
-                            trailing: IconButton(
-                              icon: Icon(
-                                _likeVisible1
-                                    ? Icons.check_box
-                                    : Icons.check_box_outline_blank,
+                      child: FutureBuilder(
+                        future: _getLocation(),
+                        builder:
+                            (BuildContext context, AsyncSnapshot snapshot) {
+                          if (snapshot.data == null) {
+                            return Container(
+                              child: Center(
+                                child: Text('Loading...'),
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _likeVisible1 ^= true;
-                                });
+                            );
+                          } else {
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: ScrollPhysics(),
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Lights(
+                                            snapshot.data[index].id,
+                                            snapshot.data[index].location_name),
+                                      ),
+                                    );
+                                  },
+                                  child: ListTile(
+                                    leading: Icon(Icons.computer, size: 25),
+                                    title: Text(
+                                        snapshot.data[index].location_name),
+                                    trailing: Icon(Icons.chevron_right),
+                                  ),
+                                );
                               },
-                            ),
-                          ),
-                          ListTile(
-                            leading: Icon(Icons.album, size: 50),
-                            title: Text('Heart Shaker'),
-                            subtitle: Text('TWICE'),
-                            trailing: IconButton(
-                              icon: Icon(
-                                _likeVisible2
-                                    ? Icons.check_box
-                                    : Icons.check_box_outline_blank,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _likeVisible2 ^= true;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
+                            );
+                          }
+                        },
                       ),
-                    ),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text(
-                          "Favorite",
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      ),
-                    ),
-                    Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      elevation: 10.0,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          ListTile(
-                            leading: Icon(Icons.album, size: 50),
-                            title: Text('Heart Shaker'),
-                            subtitle: Text('TWICE'),
-                            trailing: IconButton(
-                              icon: Icon(
-                                _likeVisible1
-                                    ? Icons.check_box
-                                    : Icons.check_box_outline_blank,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _likeVisible1 ^= true;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    )
                   ],
                 ),
               ),

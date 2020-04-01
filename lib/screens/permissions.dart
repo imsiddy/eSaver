@@ -1,6 +1,6 @@
 import 'package:esaver/classes/user.dart';
+import 'package:esaver/utilities/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -10,7 +10,6 @@ class Permissions extends StatefulWidget {
   final int id;
   final String location;
   Permissions(this.id, this.location);
-
   @override
   _PermissionsState createState() => _PermissionsState(this.id, this.location);
 }
@@ -26,11 +25,11 @@ class _PermissionsState extends State<Permissions> {
   String grantUserId;
   List accessingUsers = [];
 
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
   _PermissionsState(this.id, this.location);
 
   Map grantedUsers;
-
-  
 
   Future<List<User>> _getUsers() async {
     String _token = await getToken();
@@ -46,10 +45,11 @@ class _PermissionsState extends State<Permissions> {
     List<User> users = [];
 
     for (var u in jsonData) {
-      User user = User(u['id'], u['name'], u['username'], u['is_admin'], u['locations']);
+      User user = User(
+          u['id'], u['name'], u['username'], u['is_admin'], u['locations']);
       users.add(user);
     }
-    
+
     return users;
   }
 
@@ -62,20 +62,22 @@ class _PermissionsState extends State<Permissions> {
           'Content-Type': 'application/json',
           'Authorization': 'Token $_token',
         });
-
+    bool userExists = false;
     var jsonData = json.decode(response.body)['users'];
     for (var u in jsonData) {
       if (u['username'] == grantUserId) {
         accessingUsers.add(u['id']);
-        // setState(() {
-        //   grantedUsers.add(u);
-        // });
+        userExists = true;
+        await _grantUser();
       }
+    }
+    if (userExists == false) {
+      displaySnackBar(_scaffoldKey, 'Invalid user.', 'Try again');
     }
   }
 
   _grantUser() async {
-    await findUserId();
+    //await findUserId();
     String jsonData = '{"users": $accessingUsers}';
     String _token = await getToken();
     var response = await http.put(
@@ -85,6 +87,7 @@ class _PermissionsState extends State<Permissions> {
           'Authorization': 'Token $_token',
         },
         body: jsonData);
+    displaySnackBar(_scaffoldKey, 'Successfully granted permission.', 'OK');
     print(response.body);
   }
 
@@ -98,13 +101,68 @@ class _PermissionsState extends State<Permissions> {
           'Authorization': 'Token $_token',
         },
         body: jsonData);
+    displaySnackBar(_scaffoldKey, 'Successfully removed permission.', 'OK');
     print(response.body);
   }
 
   @override
   Widget build(BuildContext context) {
+    var futureBuilder = FutureBuilder(
+                    future: _getUsers(),
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
+                      if (snapshot.data == null) {
+                        return Container(
+                          child: Center(
+                            child: Text('Loading...'),
+                          ),
+                        );
+                      } else {
+                        return ListView.builder(
+                            physics: ScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: snapshot.data.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              print(snapshot.data[index].username);
+                              accessingUsers.add(snapshot.data[index].id);
+                              return Column(
+                                children: <Widget>[
+                                  ListTile(
+                                    leading: Icon(
+                                      Icons.person,
+                                      size: 25,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                    title: Text(
+                                      snapshot.data[index].username,
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                    trailing: IconButton(
+                                      icon: Icon(
+                                        Icons.delete,
+                                        size: 25,
+                                        color: Colors.grey.shade500,
+                                      ),
+                                      onPressed: () {
+                                        print(accessingUsers
+                                            .remove(snapshot.data[index].id));
+                                        setState(() async {
+                                          await _deleteUser();
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  Divider(
+                                    height: 1,
+                                    color: Colors.grey.shade700,
+                                  )
+                                ],
+                              );
+                            });
+                      }
+                    });
     return Container(
       child: Scaffold(
+        key: _scaffoldKey,
         appBar: AppBar(
           title: Text('Manage Permissions'),
         ),
@@ -160,79 +218,75 @@ class _PermissionsState extends State<Permissions> {
                       style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
                     onPressed: () {
-                      _grantUser();
+                      findUserId();
                     },
                   ),
                 ),
                 SizedBox(
                   height: 30,
                 ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Accessing',
-                    style: TextStyle(
-                      fontSize: 20,
-                      //fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                // Row(
+                //   children: <Widget>[
+                //     Expanded(
+                //                           child: Text(
+                //         'Accessing',
+                //         textAlign: TextAlign.left,
+                //         style: TextStyle(
+                //           fontSize: 20,
+                //           //fontWeight: FontWeight.bold,
+                //         ),
+                //       ),
+                //     ),
+                //     Expanded(
+                //                           child: IconButton(
+                //         alignment: Alignment.centerRight,
+                //         icon: Icon(
+                //           Icons.delete_forever,
+                //           size: 25,
+                //           color: Colors.grey.shade500,
+                //         ),
+                //         onPressed: () {
+                //           accessingUsers = [];
+                //           setState(() async {
+                //             await _deleteUser();
+                //           });
+                //         },
+                //       ),
+                //     )
+                //   ],
+                // ),
+                ListTile(
+                  title: Text(
+                        'Accessing',
+                        textAlign: TextAlign.start,
+                        style: TextStyle(
+                          fontSize: 25,
+                          //fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  trailing: IconButton(
+                    tooltip: 'Remove All',
+                        alignment: Alignment.centerRight,
+                        icon: Icon(
+                          Icons.delete_forever,
+                          size: 30,
+                          color: Colors.grey.shade500,
+                        ),
+                        onPressed: () {
+                          accessingUsers = [];
+                          setState(() async {
+                            await _deleteUser();
+                          });
+                        },
+                      ),
                 ),
+
                 Divider(
                   color: Colors.blue,
                   thickness: 5,
+                  height: 1,
                 ),
-                FutureBuilder(
-                    future: _getUsers(),
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.data == null) {
-                        return Container(
-                          child: Center(
-                            child: Text('Loading...'),
-                          ),
-                        );
-                      } else {
-                        return ListView.builder(
-                            physics: ScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: snapshot.data.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              print(snapshot.data[index].username);
-                              accessingUsers.add(snapshot.data[index].id);
-                              return Column(
-                                children: <Widget>[
-                                  ListTile(
-                                    leading: Icon(
-                                      Icons.person,
-                                      size: 25,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                    title: Text(
-                                      snapshot.data[index].username,
-                                      style: TextStyle(fontSize: 18),
-                                    ),
-                                    trailing: IconButton(
-                                      icon: Icon(
-                                        Icons.delete,
-                                        size: 25,
-                                        color: Colors.grey.shade500,
-                                      ),
-                                      onPressed: () {
-                                        print(accessingUsers.remove(snapshot.data[index].id));
-                                          setState(() async {
-                                          await _deleteUser();
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                  Divider(
-                                    height: 1,
-                                    color: Colors.grey.shade700,
-                                  )
-                                ],
-                              );
-                            });
-                      }
-                    }),
+                futureBuilder,
               ],
             )),
       ),

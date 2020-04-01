@@ -3,6 +3,7 @@ import 'Location.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
+import 'api_response.dart';
 import 'connect.dart';
 import 'user.dart';
 
@@ -15,7 +16,6 @@ class Lights extends StatefulWidget {
   @override
   _LightsState createState() => _LightsState(this.id, this.location);
 }
-
 
 bool _likeVisible1 = true;
 bool _likeVisible2 = true;
@@ -42,12 +42,30 @@ class _LightsState extends State<Lights> {
     List<Connection> connections = [];
 
     for (var u in jsonData) {
-      Connection connection = Connection( u['id'], u['connection_name'], u['connection_pin'], u['is_high']);
+      Connection connection = Connection(
+          u['id'], u['connection_name'], u['connection_pin'], u['is_high']);
       connections.add(connection);
     }
     return connections;
   }
 
+  Future<APIResponse<bool>> updateNotes(int ids, Changes item) async {
+    return await http
+        .put('https://smartboi.herokuapp.com/api/connection/$ids',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+            },
+            body: json.encode(item.toJson()))
+        .then((data) {
+      if (data.statusCode == 204) {
+        _getUsers();
+        return APIResponse<bool>(data: true);
+      }
+      return APIResponse<bool>(error: true, errorMessage: 'An error occured');
+    }).catchError((_) =>
+            APIResponse<bool>(error: true, errorMessage: 'An error occured'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,12 +142,20 @@ class _LightsState extends State<Lights> {
                                           value: snapshot.data[index].is_high,
                                           onChanged: (value) {
                                             print(snapshot.data[index].is_high);
-                                            print("main file data must be here");
+                                            print(
+                                                "main file data must be here");
+                                            final note = Changes(
+                                              is_high: value,
+                                            );
                                             setState(
                                               () {
-                                                 value = snapshot.data[ index].is_high;
+                                                value = snapshot
+                                                    .data[index].is_high;
+                                                updateNotes(
+                                                    snapshot.data[index].id,
+                                                    note);
+
                                                 //  _likeVisible1 = value;
-                                  
                                               },
                                             );
                                             print(snapshot.data[index].is_high);

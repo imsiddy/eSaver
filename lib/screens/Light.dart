@@ -98,15 +98,16 @@ class _LightsState extends State<Lights> {
                     alignment: Alignment.topLeft,
                     child: Text(
                       location,
-                      style: TextStyle(fontSize: 50),
+                      style: TextStyle(fontSize: 30),
                     ),
                   ),
                 ),
                 Divider(
+                  color: Colors.blue,
                   indent: 25.0,
                   endIndent: 25.0,
-                  thickness: 5.0,
-                  color: Colors.black,
+                  height: 25,
+                  thickness: 5,
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 8.0),

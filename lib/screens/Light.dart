@@ -1,11 +1,12 @@
+import 'package:esaver/classes/api_response.dart';
+import 'package:esaver/classes/connection.dart';
+import 'package:esaver/classes/user.dart';
 import 'package:flutter/material.dart';
-import 'Location.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-import 'api_response.dart';
-import 'connect.dart';
-import 'user.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Lights extends StatefulWidget {
   final int id;
@@ -27,13 +28,24 @@ class _LightsState extends State<Lights> {
   String grantUserId = '17ce084';
 
   _LightsState(this.id, this.location);
+  Future<String> getToken() async {
+    final _prefs = await SharedPreferences.getInstance();
+    return _prefs.getString('token');
+  }
+
+  _setToken(String token) async {
+    final _prefs = await SharedPreferences.getInstance();
+    await _prefs.setString('token', token);
+  }
 
   Future<List<Connection>> _getUsers() async {
+    String _token = await getToken();
+    print('Token $_token');
     var response = await http.get(
         Uri.encodeFull('https://smartboi.herokuapp.com/api/location/$id'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+          'Authorization': 'Token $_token',
         });
 
     var jsonData = json.decode(response.body)['connections'];
@@ -50,11 +62,13 @@ class _LightsState extends State<Lights> {
   }
 
   Future<APIResponse<bool>> updateNotes(int ids, Changes item) async {
+    String _token = await getToken();
+    print('Token $_token');
     return await http
         .put('https://smartboi.herokuapp.com/api/connection/$ids',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+              'Authorization': 'Token $_token',
             },
             body: json.encode(item.toJson()))
         .then((data) {
@@ -78,16 +92,6 @@ class _LightsState extends State<Lights> {
             padding: EdgeInsets.all(8.0),
             child: Column(
               children: <Widget>[
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 9.0),
-                    child: Text(
-                      "Location : ",
-                      style: TextStyle(fontSize: 25),
-                    ),
-                  ),
-                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Align(
@@ -127,10 +131,7 @@ class _LightsState extends State<Lights> {
                                 shrinkWrap: true,
                                 itemCount: snapshot.data.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  // print(snapshot.data[index].connection_name);
-                                  // print(snapshot.data[index].is_high);
                                   print(index);
-                                  // print(snapshot.data[index].id);
 
                                   return Column(
                                     children: <Widget>[

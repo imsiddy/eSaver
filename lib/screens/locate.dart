@@ -9,10 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:esaver/screens/permissions.dart';
 
 class Locate extends StatefulWidget {
-  Locate({Key key}) : super(key: key);
-
+  final bool isAdmin;
+  Locate(this.isAdmin);
   @override
-  _LocateState createState() => _LocateState();
+  _LocateState createState() => _LocateState(this.isAdmin);
 }
 
 Future<String> getToken() async {
@@ -47,22 +47,9 @@ Future<List<Location>> _getLocation() async {
   return locations;
 }
 
-Future<String> _getName() async {
-  print('----------------------------');
-  String _token = await getToken();
-  print('Token $_token');
-  var response = await http
-      .get(Uri.encodeFull('https://smartboi.herokuapp.com/api/user'), headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Token $_token',
-  });
-
-  var jsonData = json.decode(response.body)['username'];
-  String username = jsonData.toString();
-  return username;
-}
-
 class _LocateState extends State<Locate> {
+  bool isAdmin;
+  _LocateState(this.isAdmin);
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -112,32 +99,14 @@ class _LocateState extends State<Locate> {
                     Align(
                         alignment: Alignment.topLeft,
                         child: Padding(
-                          padding: const EdgeInsets.only(bottom:8.0),
+                          padding: const EdgeInsets.only(bottom: 8.0),
                           child: Row(
                             children: <Widget>[
                               Text(
                                 "Hello,",
                                 style: TextStyle(fontSize: 30),
                               ),
-                              FutureBuilder(
-                                future: _getName(),
-                                builder: (BuildContext context,
-                                    AsyncSnapshot snapshot) {
-                                  if (snapshot.data == null) {
-                                    return Container(
-                                      child: Center(
-                                        child: Text('user',
-                                            style: TextStyle(fontSize: 30)),
-                                      ),
-                                    );
-                                  } else {
-                                    return Text(
-                                      snapshot.data,
-                                      style: TextStyle(fontSize: 30),
-                                    );
-                                  }
-                                },
-                              ),
+                              
                             ],
                           ),
                         )),
@@ -206,34 +175,53 @@ class _LocateState extends State<Locate> {
                                   itemCount: snapshot.data.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    return
-                                       Column(
-                                        children: <Widget>[
-                                          ListTile(
-                                            leading: Icon(Icons.computer, size: 25),
-                                            title: Text(
-                                                snapshot.data[index].location_name),
-                                            // trailing: Icon(Icons.chevron_right),
-                                            trailing: IconButton(icon:Icon(Icons.chevron_right), onPressed: (){Navigator.push(
+                                    
+                                    return Column(
+                                      children: <Widget>[
+                                        ListTile(
+                                          leading:
+                                              Icon(Icons.computer, size: 25),
+                                          title: Text(snapshot
+                                              .data[index].location_name),
+                                          trailing: IconButton(
+                                              icon: Icon(isAdmin
+                                                  ? Icons.person_add
+                                                  : Icons.chevron_right),
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) => isAdmin
+                                                          ? Permissions(
+                                                              snapshot
+                                                                  .data[index]
+                                                                  .id,
+                                                              snapshot
+                                                                  .data[index]
+                                                                  .location_name)
+                                                          : Lights(
+                                                              snapshot
+                                                                  .data[index]
+                                                                  .id,
+                                                              snapshot
+                                                                  .data[index]
+                                                                  .location_name)),
+                                                );
+                                              }),
+                                          onTap: () {
+                                            Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                  builder: (context) => Permissions(
-                                                      snapshot.data[index].id,
-                                                      snapshot.data[index]
-                                                          .location_name)),
-                                            );}
-                                            ),
-                                            onTap: (){ Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => Lights(
-                                            snapshot.data[index].id,
-                                            snapshot.data[index].location_name),
-                                      ),
-                                    );},
-                                            ),
-                                        ],
-                                      );
+                                                builder: (context) => Lights(
+                                                    snapshot.data[index].id,
+                                                    snapshot.data[index]
+                                                        .location_name),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    );
                                   });
                             }
                           }),

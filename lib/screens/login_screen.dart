@@ -33,6 +33,11 @@ class _LoginState extends State<LoginScreen> {
     _prefs.setString('token', token);
   }
 
+  _setAdmin(bool isAdmin) async {
+    final _prefs = await SharedPreferences.getInstance();
+    _prefs.setBool('is_admin', isAdmin);
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -185,11 +190,13 @@ class _LoginState extends State<LoginScreen> {
                                       ));
                             } else {
                               _setToken(_loginCred.toString());
+                              bool isAdmin = await ApiService.isAdmin();
+                              _setAdmin(isAdmin);
                               Navigator.pop(context);
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => Locate()));
+                                      builder: (context) => Locate(isAdmin)));
                             }
                           },
                         ),

@@ -1,24 +1,30 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
+Future<String> getToken() async {
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    print(_prefs.getString('token').toString());
+    return _prefs.getString('token').toString();
+  }
 class ApiService {
-  static String url = "https://smartboi.herokuapp.com/api/user";
+  static String url = "https://smartboi.herokuapp.com/api/";
 
-  static Future<String> getList(String token) async {
+  static Future<dynamic> getList(String token) async {
     try {
       final response =
-          await http.get(Uri.encodeFull(url), headers: {
+          await http.get(Uri.encodeFull('${url}user'), headers: {
         'Authorization': 'Token $token'
       });
-      print(response.body);
-        return (response.body.toString());
+      return(response.body);
+        //return (response.body.toString());
       
     } catch (ex) {
       return null;
     }
   }
 
+  
   static Future<dynamic> loginPost(Map<String, String> loginCred) async {
     try {
       final response = await http.post(
@@ -42,54 +48,18 @@ class ApiService {
     }
   }
 
-//   static Future<bool> registerPost(Map<String, dynamic> userinfo) async {
-//     try {
-//       final response = await http.post(
-//         Uri.encodeFull('${Urls.BASE_API_URL}userinfo'),
-//         body: jsonEncode(userinfo),
-//         headers: {
-//           "key":
-//               "mongodb+srv://change_bharuch:Developers_19@cluster0-lpmxb.mongodb.net/test?retryWrites=true&w=majority",
-//           'Content-Type': 'application/json'
-//         },
-//       );
-//       return response.statusCode == 201;
-//     } catch (e) {
-//       return false;
-//     }
-//   }
+  static Future<dynamic> isAdmin() async {
+    String _token = await getToken();
 
-//  static Future<bool> articlePost(Map<String, dynamic> article) async {
-//     try {
-//       final response = await http.post(
-//         Uri.encodeFull('${Urls.BASE_API_URL}artchild'),
-//         body: jsonEncode(article),
-//         headers: {
-//           "key":
-//               "mongodb+srv://change_bharuch:Developers_19@cluster0-lpmxb.mongodb.net/test?retryWrites=true&w=majority",
-//           'Content-Type': 'application/json'
-//         },
-//       );
-//       return response.statusCode == 201;
-//     } catch (e) {
-//       return false;
-//     }
-//   }
+    final response = await http.get(
+        Uri.encodeFull('https://smartboi.herokuapp.com/api/user'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $_token',
+        });
 
-//   static Future<bool> experiencePost(Map<String, dynamic> experience) async {
-//     try {
-//       final response = await http.post(
-//         Uri.encodeFull('${Urls.BASE_API_URL}artvolunteer'),
-//         body: jsonEncode(experience),
-//         headers: {
-//           "key":
-//               "mongodb+srv://change_bharuch:Developers_19@cluster0-lpmxb.mongodb.net/test?retryWrites=true&w=majority",
-//           'Content-Type': 'application/json'
-//         },
-//       );
-//       return response.statusCode == 201;
-//     } catch (e) {
-//       return false;
-//     }
-//   }
+    var jsonData = json.decode(response.body)['is_admin'];
+    return jsonData;
+  }
+
 }

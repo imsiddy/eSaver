@@ -1,3 +1,4 @@
+import 'package:esaver/screens/Light.dart';
 import 'package:esaver/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:esaver/classes/Location.dart';
@@ -203,24 +204,47 @@ class _LocateState extends State<Locate> {
                                   itemCount: snapshot.data.length,
                                   itemBuilder:
                                       (BuildContext context, int index) {
-                                    return GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => Permissions(
-                                                  snapshot.data[index].id,
-                                                  snapshot.data[index]
-                                                      .location_name)),
-                                        );
-                                      },
-                                      child: ListTile(
-                                        leading: Icon(Icons.computer, size: 25),
-                                        title: Text(
+                                    return
+                                    //  GestureDetector(
+                                    //   onTap: () {
+                                    //     // Navigator.push(
+                                    //     //   context,
+                                    //     //   MaterialPageRoute(
+                                    //     //       builder: (context) => Permissions(
+                                    //     //           snapshot.data[index].id,
+                                    //     //           snapshot.data[index]
+                                    //     //               .location_name)),
+                                    //     // );
+                                    //     print("data");
+                                    //   },
+                                       Column(
+                                        children: <Widget>[
+                                          ListTile(
+                                            leading: Icon(Icons.computer, size: 25),
+                                            title: Text(
+                                                snapshot.data[index].location_name),
+                                            // trailing: Icon(Icons.chevron_right),
+                                            trailing: IconButton(icon:Icon(Icons.chevron_right), onPressed: (){Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => Permissions(
+                                                      snapshot.data[index].id,
+                                                      snapshot.data[index]
+                                                          .location_name)),
+                                            );}
+                                            ),
+                                            onTap: (){ Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Lights(
+                                            snapshot.data[index].id,
                                             snapshot.data[index].location_name),
-                                        trailing: Icon(Icons.chevron_right),
                                       ),
-                                    );
+                                    );},
+                                            ),
+                                        ],
+                                      );
+                                    // );
                                   });
                             }
                           }),

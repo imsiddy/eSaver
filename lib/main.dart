@@ -15,5 +15,3 @@ Future<void> main() async {
       //home: Locate(),
     ));
 }
-
-

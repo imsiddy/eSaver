@@ -19,13 +19,13 @@ Future<String> getToken() async {
   return _prefs.getString('token');
 }
 
-  _setToken (String token) async{
-    final _prefs = await SharedPreferences.getInstance();
-    await _prefs.setString('token', token);
-  }
+_setToken(String token) async {
+  final _prefs = await SharedPreferences.getInstance();
+  await _prefs.setString('token', token);
+}
 
 Future<List<Location>> _getLocation() async {
-  String _token = await getToken(); 
+  String _token = await getToken();
   print('Token $_token');
   print('----------------------------');
   var response = await http
@@ -46,41 +46,58 @@ Future<List<Location>> _getLocation() async {
   return locations;
 }
 
+Future<String> _getName() async {
+  print('----------------------------');
+  var response = await http
+      .get(Uri.encodeFull('https://smartboi.herokuapp.com/api/user'), headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+  });
+
+  var jsonData = json.decode(response.body)['username'];
+  String username = jsonData.toString();
+  return username;
+}
+
 class _LocateState extends State<Locate> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: Text("Locations"),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.launch),
-            tooltip: 'Confirm Sign Out',
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                        title: Text('Sign out'),
-                        content: Text('Would you like to sign out?'),
-                        actions: <Widget>[
-                          FlatButton(
-                            child: Text('Cancel'),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                          FlatButton(
-                              child: Text('Yes'),
-                              onPressed: () {
-                                
-                                _setToken(null);
-                                Navigator.pop(context);
-                                Navigator.pop(context);
-                                Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginScreen()));
-                              })
-                        ],
-                      ));
-            },
-          )
-        ],),
+        appBar: AppBar(
+          title: Text("Locations"),
+          actions: <Widget>[
+            IconButton(
+              icon: const Icon(Icons.launch),
+              tooltip: 'Confirm Sign Out',
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                          title: Text('Sign out'),
+                          content: Text('Would you like to sign out?'),
+                          actions: <Widget>[
+                            FlatButton(
+                              child: Text('Cancel'),
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                            FlatButton(
+                                child: Text('Yes'),
+                                onPressed: () {
+                                  _setToken(null);
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => LoginScreen()));
+                                })
+                          ],
+                        ));
+              },
+            )
+          ],
+        ),
         body: ListView(
           children: <Widget>[
             Container(
@@ -91,9 +108,35 @@ class _LocateState extends State<Locate> {
                   children: <Widget>[
                     Align(
                         alignment: Alignment.topLeft,
-                        child: Text(
-                          "Hello,",
-                          style: TextStyle(fontSize: 30),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom:8.0),
+                          child: Row(
+                            children: <Widget>[
+                              Text(
+                                "Hello,",
+                                style: TextStyle(fontSize: 30),
+                              ),
+                              FutureBuilder(
+                                future: _getName(),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot snapshot) {
+                                  if (snapshot.data == null) {
+                                    return Container(
+                                      child: Center(
+                                        child: Text('user',
+                                            style: TextStyle(fontSize: 30)),
+                                      ),
+                                    );
+                                  } else {
+                                    return Text(
+                                      snapshot.data,
+                                      style: TextStyle(fontSize: 30),
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
                         )),
                     Align(
                         alignment: Alignment.topLeft,
@@ -166,7 +209,8 @@ class _LocateState extends State<Locate> {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => Permissions(
-                                                  snapshot.data[index].id, snapshot.data[index]
+                                                  snapshot.data[index].id,
+                                                  snapshot.data[index]
                                                       .location_name)),
                                         );
                                       },

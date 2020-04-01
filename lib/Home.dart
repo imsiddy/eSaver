@@ -13,6 +13,7 @@ class MyApp extends StatefulWidget {
 
 bool _likeVisible1 = true;
 bool _likeVisible2 = true;
+String username;
 
 class _MyAppState extends State<MyApp> {
   Future<List<Location>> _getLocation() async {
@@ -34,6 +35,20 @@ class _MyAppState extends State<MyApp> {
       locations.add(locate);
     }
     return locations;
+  }
+
+  Future<String> _getName() async {
+    print('----------------------------');
+    var response = await http.get(
+        Uri.encodeFull('https://smartboi.herokuapp.com/api/user'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+        });
+
+    var jsonData = json.decode(response.body)['username'];
+    String username = jsonData.toString();
+    return username;
   }
 
   @override
@@ -58,11 +73,40 @@ class _MyAppState extends State<MyApp> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Align(
-                          alignment: Alignment.topLeft,
-                          child: Text(
-                            "Hi, Siddharth",
-                            style: TextStyle(fontSize: 50),
-                          )),
+                        alignment: Alignment.topLeft,
+                        // String data = _getName();
+                        child: Row(
+                          children: <Widget>[
+                            Text(
+                              "Hi,",
+                              style: TextStyle(fontSize: 50),
+                            ),
+                              FutureBuilder(
+                                future: _getName(),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot snapshot) {
+                                  if (snapshot.data == null) {
+                                    return Container(
+                                      child: Center(
+                                        child: Text('user',
+                                            style: TextStyle(fontSize: 50)),
+                                      ),
+                                    );
+                                  } else {
+                                    return Text(
+                                      snapshot.data,
+                                      style: TextStyle(fontSize: 50),
+                                    );
+                                  }
+                                },
+                              ),
+                            //     Text(
+                            //   "$username",
+                            //   style: TextStyle(fontSize: 50),
+                            // ),
+                          ],
+                        ),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -81,9 +125,9 @@ class _MyAppState extends State<MyApp> {
                           top: 8.0, bottom: 8.0, left: 12.0, right: 12.0),
                       child: Card(
                         shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25.0),
-                      ),
-                      elevation: 10.0,
+                          borderRadius: BorderRadius.circular(25.0),
+                        ),
+                        elevation: 10.0,
                         child: TextFormField(
                           decoration: InputDecoration(
                             fillColor: Colors.white,

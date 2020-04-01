@@ -17,7 +17,6 @@ class Lights extends StatefulWidget {
   _LightsState createState() => _LightsState(this.id, this.location);
 }
 
-
 bool _likeVisible1 = true;
 bool _likeVisible2 = true;
 List<User> grantedUsers;
@@ -43,40 +42,48 @@ class _LightsState extends State<Lights> {
     List<Connection> connections = [];
 
     for (var u in jsonData) {
-      Connection connection = Connection( u['id'], u['connection_name'], u['connection_pin'], u['is_high']);
+      Connection connection = Connection(
+          u['id'], u['connection_name'], u['connection_pin'], u['is_high']);
       connections.add(connection);
     }
     return connections;
   }
 
   _updateAlbum(int id, bool item) async {
-  var response = await http.put(
-    'https://smartboi.herokuapp.com/api/connection/$id',
-    headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
-        },
-    body: 'is_high',
+    var response = await http.put(
+      'https://smartboi.herokuapp.com/api/connection/$id',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+      },
+      body: 'is_high',
     );
 
-  // if (response.statusCode == 200) {
-  //   // If the server did return a 200 OK response,
-  //   // then parse the JSON.
-  //   return Album.fromJson(json.decode(response.body));
-  // } else {
-  //   // If the server did not return a 200 OK response,
-  //   // then throw an exception.
-  //   throw Exception('Failed to update album.');
-  // }
-}
+    // if (response.statusCode == 200) {
+    //   // If the server did return a 200 OK response,
+    //   // then parse the JSON.
+    //   return Album.fromJson(json.decode(response.body));
+    // } else {
+    //   // If the server did not return a 200 OK response,
+    //   // then throw an exception.
+    //   throw Exception('Failed to update album.');
+    // }
+  }
 
-updateNote(int id, bool item) async {
-  String jsonData = '{"users": "is_high": $item}';
-    var response = await  http.put('https://smartboi.herokuapp.com/api/connection/$id' , headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
-        }, body: json.encode(jsonData));
-    //     .then((data) 
+  updateNote(int ids, bool item) async {
+    String data = '{"is_high":$item}';
+    String jsonData = '{"status_updated":$data}';
+    print(ids);
+    var response =
+        await http.put('https://smartboi.herokuapp.com/api/connection/$ids',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+            },
+            body: json.encode(jsonData));
+            print(jsonData);
+    return response;
+    //     .then((data)
     //     {
     //   if (data.statusCode == 204) {
     //     return APIResponse<bool>(data: true);
@@ -86,9 +93,23 @@ updateNote(int id, bool item) async {
     // .catchError((_) => APIResponse<bool>(error: true, errorMessage: 'An error occured'));
   }
 
+  Future<APIResponse<bool>> updateNotes(int ids, Changes item) async {
+    return await http.put('https://smartboi.herokuapp.com/api/connection/$ids', headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+            }, body: json.encode(item.toJson())).then((data) {
+      if (data.statusCode == 204) {
+        _getUsers();
+        return APIResponse<bool>(data: true);
+      }
+      return APIResponse<bool>(error: true, errorMessage: 'An error occured');
+    })
+    .catchError((_) => APIResponse<bool>(error: true, errorMessage: 'An error occured'));
+  }
 
   @override
   Widget build(BuildContext context) {
+    
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(title: Text("Main")),
@@ -151,6 +172,10 @@ updateNote(int id, bool item) async {
                                   // print(snapshot.data[index].is_high);
                                   // print(index);
                                   // print(snapshot.data[index].id);
+                                  bool val = snapshot.data[index].is_high;
+                                  // print(snapshot.data[index].is_high);
+                                  // print(val);
+                                  // print("initial stage");
 
                                   return Column(
                                     children: <Widget>[
@@ -159,21 +184,25 @@ updateNote(int id, bool item) async {
                                         title: Text(snapshot
                                             .data[index].connection_name),
                                         trailing: Switch(
-                                          value: snapshot.data[index].is_high,
+                                          // value: val,
+                                          value :snapshot.data[index].is_high,
                                           onChanged: (value) {
-                                            print(snapshot.data[index].is_high);
-                                            print(value);
-                                            print("data must be here");
+                                            // print(snapshot.data[index].is_high);
+                                            // print("value of value : ");
+                                            // print(value);
+                                            // print("/n");
+                                            final note = Changes(
+                                              is_high : value,
+                                            );  
                                             setState(
                                               () {
-                                                 value = snapshot.data[ index].is_high;
-                                                 _updateAlbum(snapshot.data[index].id, value);
-                                                //  _likeVisible1 = value;
+                                                // value = snapshot.data[index].is_high;
+                                                updateNotes(snapshot.data[index].id,note);
                                               },
                                             );
-                                            print(value);
-                                            print(snapshot.data[index].is_high);
-                                            print("data be here");
+                                            // print(value);
+                                            // print(snapshot.data[index].is_high);
+                                            // print("data be here");
                                           },
                                           activeTrackColor:
                                               Colors.lightGreenAccent,
@@ -183,6 +212,8 @@ updateNote(int id, bool item) async {
                                       Divider(
                                         height: 1,
                                         color: Colors.grey.shade700,
+                                        indent: 25.0,
+                                        endIndent: 25.0,
                                       )
                                     ],
                                   );

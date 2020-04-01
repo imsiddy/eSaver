@@ -49,10 +49,12 @@ Future<List<Location>> _getLocation() async {
 
 Future<String> _getName() async {
   print('----------------------------');
+  String _token = await getToken();
+  print('Token $_token');
   var response = await http
       .get(Uri.encodeFull('https://smartboi.herokuapp.com/api/user'), headers: {
     'Content-Type': 'application/json',
-    'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+    'Authorization': 'Token $_token',
   });
 
   var jsonData = json.decode(response.body)['username'];
@@ -205,18 +207,6 @@ class _LocateState extends State<Locate> {
                                   itemBuilder:
                                       (BuildContext context, int index) {
                                     return
-                                    //  GestureDetector(
-                                    //   onTap: () {
-                                    //     // Navigator.push(
-                                    //     //   context,
-                                    //     //   MaterialPageRoute(
-                                    //     //       builder: (context) => Permissions(
-                                    //     //           snapshot.data[index].id,
-                                    //     //           snapshot.data[index]
-                                    //     //               .location_name)),
-                                    //     // );
-                                    //     print("data");
-                                    //   },
                                        Column(
                                         children: <Widget>[
                                           ListTile(
@@ -244,7 +234,6 @@ class _LocateState extends State<Locate> {
                                             ),
                                         ],
                                       );
-                                    // );
                                   });
                             }
                           }),

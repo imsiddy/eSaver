@@ -28,15 +28,9 @@ class _PermissionsState extends State<Permissions> {
 
   _PermissionsState(this.id, this.location);
 
-  List<User> grantedUsers;
+  Map grantedUsers;
 
-  @override
-  void initState() {
-    super.initState();
-    setState(() async {
-      grantedUsers = await _getUsers();
-    });
-  }
+  
 
   Future<List<User>> _getUsers() async {
     String _token = await getToken();
@@ -52,9 +46,10 @@ class _PermissionsState extends State<Permissions> {
     List<User> users = [];
 
     for (var u in jsonData) {
-      User user = User(u['id'], u['name'], u['username'], u['locations']);
+      User user = User(u['id'], u['name'], u['username'], u['is_admin'], u['locations']);
       users.add(user);
     }
+    
     return users;
   }
 
@@ -72,15 +67,28 @@ class _PermissionsState extends State<Permissions> {
     for (var u in jsonData) {
       if (u['username'] == grantUserId) {
         accessingUsers.add(u['id']);
-        setState(() {
-          grantedUsers.add(u);
-        });
+        // setState(() {
+        //   grantedUsers.add(u);
+        // });
       }
     }
   }
 
   _grantUser() async {
     await findUserId();
+    String jsonData = '{"users": $accessingUsers}';
+    String _token = await getToken();
+    var response = await http.put(
+        'https://smartboi.herokuapp.com/api/location/$id/addusers',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token $_token',
+        },
+        body: jsonData);
+    print(response.body);
+  }
+
+  _deleteUser() async {
     String jsonData = '{"users": $accessingUsers}';
     String _token = await getToken();
     var response = await http.put(
@@ -209,7 +217,10 @@ class _PermissionsState extends State<Permissions> {
                                         color: Colors.grey.shade500,
                                       ),
                                       onPressed: () {
-                                        setState(() {});
+                                        print(accessingUsers.remove(snapshot.data[index].id));
+                                          setState(() async {
+                                          await _deleteUser();
+                                        });
                                       },
                                     ),
                                   ),

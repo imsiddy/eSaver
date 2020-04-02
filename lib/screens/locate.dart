@@ -55,7 +55,7 @@ class _LocateState extends State<Locate> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Locations"),
+          title: Text("eSaver"),
           actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.launch),

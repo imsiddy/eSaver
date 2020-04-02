@@ -12,7 +12,6 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginState extends State<LoginScreen> {
-
   bool showSpinner = false;
   bool _visible;
   String _userid;
@@ -40,7 +39,6 @@ class _LoginState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
@@ -67,9 +65,7 @@ class _LoginState extends State<LoginScreen> {
                           onChanged: (value) {
                             _userid = value;
                           },
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 20),
+                          style: TextStyle(color: Colors.blue, fontSize: 20),
                           maxLines: 1,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
@@ -90,9 +86,7 @@ class _LoginState extends State<LoginScreen> {
                             _password = value;
                           },
                           obscureText: _visible == true ? false : true,
-                          style: TextStyle(
-                              color: Colors.blue,
-                              fontSize: 20),
+                          style: TextStyle(color: Colors.blue, fontSize: 20),
                           maxLines: 1,
                           decoration: InputDecoration(
                             prefixIcon: Icon(Icons.lock, color: Colors.blue),
@@ -109,9 +103,8 @@ class _LoginState extends State<LoginScreen> {
                                   color: Colors.blue,
                                 )),
                             hintText: "Password",
-                            hintStyle: TextStyle(
-                                color: Colors.blue,
-                                fontSize: 20),
+                            hintStyle:
+                                TextStyle(color: Colors.blue, fontSize: 20),
                           ),
                         ),
                       ),
@@ -138,9 +131,7 @@ class _LoginState extends State<LoginScreen> {
                           color: Colors.blue,
                           child: Text(
                             "Login",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20),
+                            style: TextStyle(color: Colors.white, fontSize: 20),
                           ),
                           onPressed: () async {
                             setState(() {

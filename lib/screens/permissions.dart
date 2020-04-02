@@ -24,16 +24,21 @@ class _PermissionsState extends State<Permissions> {
   String location;
   String grantUserId;
   List accessingUsers = [];
-
+  List<User> currentUsers = [];
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   _PermissionsState(this.id, this.location);
 
-  Map grantedUsers;
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _getUsers();
+    });
+  }
 
-  Future<List<User>> _getUsers() async {
+  _getUsers() async {
     String _token = await getToken();
-
     var response = await http.get(
         Uri.encodeFull('https://smartboi.herokuapp.com/api/location/$id'),
         headers: {
@@ -43,19 +48,22 @@ class _PermissionsState extends State<Permissions> {
 
     var jsonData = json.decode(response.body)['users'];
     List<User> users = [];
-
+    accessingUsers = [];
     for (var u in jsonData) {
-      User user = User(
-          u['id'], u['name'], u['username'], u['is_admin'], u['locations']);
-      users.add(user);
+      if (u['is_admin'] == false) {
+        User user = User(
+            u['id'], u['name'], u['username'], u['is_admin'], u['locations']);
+        users.add(user);
+      }
+      accessingUsers.add(u['id']);
     }
-
-    return users;
+    setState(() {
+      currentUsers = users;
+    });
   }
 
   findUserId() async {
     String _token = await getToken();
-
     var response = await http.get(
         Uri.encodeFull('https://smartboi.herokuapp.com/api/userlist'),
         headers: {
@@ -77,7 +85,6 @@ class _PermissionsState extends State<Permissions> {
   }
 
   _grantUser() async {
-    //await findUserId();
     String jsonData = '{"users": $accessingUsers}';
     String _token = await getToken();
     var response = await http.put(
@@ -87,6 +94,7 @@ class _PermissionsState extends State<Permissions> {
           'Authorization': 'Token $_token',
         },
         body: jsonData);
+    await _getUsers();
     displaySnackBar(_scaffoldKey, 'Successfully granted permission.', 'OK');
     print(response.body);
   }
@@ -101,65 +109,13 @@ class _PermissionsState extends State<Permissions> {
           'Authorization': 'Token $_token',
         },
         body: jsonData);
+    await _getUsers();
     displaySnackBar(_scaffoldKey, 'Successfully removed permission.', 'OK');
     print(response.body);
   }
 
   @override
   Widget build(BuildContext context) {
-    var futureBuilder = FutureBuilder(
-                    future: _getUsers(),
-                    builder: (BuildContext context, AsyncSnapshot snapshot) {
-                      if (snapshot.data == null) {
-                        return Container(
-                          child: Center(
-                            child: Text('Loading...'),
-                          ),
-                        );
-                      } else {
-                        return ListView.builder(
-                            physics: ScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: snapshot.data.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              print(snapshot.data[index].username);
-                              accessingUsers.add(snapshot.data[index].id);
-                              return Column(
-                                children: <Widget>[
-                                  ListTile(
-                                    leading: Icon(
-                                      Icons.person,
-                                      size: 25,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                    title: Text(
-                                      snapshot.data[index].username,
-                                      style: TextStyle(fontSize: 18),
-                                    ),
-                                    trailing: IconButton(
-                                      icon: Icon(
-                                        Icons.delete,
-                                        size: 25,
-                                        color: Colors.grey.shade500,
-                                      ),
-                                      onPressed: () {
-                                        print(accessingUsers
-                                            .remove(snapshot.data[index].id));
-                                        setState(() async {
-                                          await _deleteUser();
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                  Divider(
-                                    height: 1,
-                                    color: Colors.grey.shade700,
-                                  )
-                                ],
-                              );
-                            });
-                      }
-                    });
     return Container(
       child: Scaffold(
         key: _scaffoldKey,
@@ -176,12 +132,10 @@ class _PermissionsState extends State<Permissions> {
                     '$location',
                     style: TextStyle(
                       fontSize: 22,
-                      //fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 Container(
-                  // margin: EdgeInsets.all(10.0),
                   padding: EdgeInsets.only(top: 10, bottom: 15),
                   color: Colors.white24,
                   child: TextFormField(
@@ -201,7 +155,6 @@ class _PermissionsState extends State<Permissions> {
                           OutlineInputBorder(borderSide: BorderSide(width: 1)),
                       hintText: "Student ID",
                       hintStyle: TextStyle(color: Colors.grey, fontSize: 18),
-                      //labelStyle: TextStyle(color: Colors.black)
                     ),
                   ),
                 ),
@@ -257,28 +210,27 @@ class _PermissionsState extends State<Permissions> {
                 // ),
                 ListTile(
                   title: Text(
-                        'Accessing',
-                        textAlign: TextAlign.start,
-                        style: TextStyle(
-                          fontSize: 25,
-                          //fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    'Accessing',
+                    textAlign: TextAlign.start,
+                    style: TextStyle(
+                      fontSize: 25,
+                    ),
+                  ),
                   trailing: IconButton(
                     tooltip: 'Remove All',
-                        alignment: Alignment.centerRight,
-                        icon: Icon(
-                          Icons.delete_forever,
-                          size: 30,
-                          color: Colors.grey.shade500,
-                        ),
-                        onPressed: () {
-                          accessingUsers = [];
-                          setState(() async {
-                            await _deleteUser();
-                          });
-                        },
-                      ),
+                    alignment: Alignment.centerRight,
+                    icon: Icon(
+                      Icons.delete_forever,
+                      size: 30,
+                      color: Colors.grey.shade500,
+                    ),
+                    onPressed: () {
+                      accessingUsers = [];
+                      setState(() async {
+                        await _deleteUser();
+                      });
+                    },
+                  ),
                 ),
 
                 Divider(
@@ -286,7 +238,44 @@ class _PermissionsState extends State<Permissions> {
                   thickness: 5,
                   height: 1,
                 ),
-                futureBuilder,
+                ListView.builder(
+                    physics: ScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: currentUsers.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Column(
+                        children: <Widget>[
+                          ListTile(
+                            leading: Icon(
+                              Icons.person,
+                              size: 25,
+                              color: Colors.grey.shade500,
+                            ),
+                            title: Text(
+                              currentUsers[index].username,
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            trailing: IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                size: 25,
+                                color: Colors.grey.shade500,
+                              ),
+                              onPressed: () {
+                                setState(() async {
+                                  accessingUsers.remove(currentUsers[index].id);
+                                  await _deleteUser();
+                                });
+                              },
+                            ),
+                          ),
+                          Divider(
+                            height: 1,
+                            color: Colors.grey.shade700,
+                          )
+                        ],
+                      );
+                    })
               ],
             )),
       ),

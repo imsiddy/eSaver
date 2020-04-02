@@ -38,6 +38,13 @@ class _LightsState extends State<Lights> {
     await _prefs.setString('token', token);
   }
 
+  void initState() {
+    super.initState();
+    setState(() {
+      _getUsers();
+    });
+  }
+
   Future<List<Connection>> _getUsers() async {
     String _token = await getToken();
     print('Token $_token');
@@ -59,6 +66,37 @@ class _LightsState extends State<Lights> {
       connections.add(connection);
     }
     return connections;
+  }
+
+  Future _getStatus(
+      String connenctin_url, bool is_high, int connection_pin) async {
+    String status;
+    if (is_high == true) {
+      return await http.get(
+        Uri.encodeFull('https://465d3a08.ngrok.io/on/$connection_pin'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+        },
+      );
+      // status = 'on';
+    } else {
+      return await http.get(
+        Uri.encodeFull('https://465d3a08.ngrok.io/off/$connection_pin'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+        },
+      );
+      // status = 'off';
+    }
+    // return await http.get(
+    //     Uri.encodeFull('https://465d3a08.ngrok.io/on/26'),
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+    //     },
+    //   );
   }
 
   Future<APIResponse<bool>> updateNotes(int ids, Changes item) async {
@@ -161,6 +199,7 @@ class _LightsState extends State<Lights> {
                                               },
                                             );
                                             print(snapshot.data[index].is_high);
+                                            _getStatus(snapshot.data[index].connection_url,value,snapshot.data[index].connection_pin);
                                             print("main file data be here");
                                           },
                                           activeTrackColor:

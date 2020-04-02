@@ -151,8 +151,12 @@ class _PermissionsState extends State<Permissions> {
                         color: Colors.grey,
                         size: 22,
                       ),
-                      border:
-                          OutlineInputBorder(borderSide: BorderSide(width: 1)),
+                      border: OutlineInputBorder(
+                             borderRadius: const BorderRadius.all(
+                               const Radius.circular(50.0),
+                             ),
+                           ),
+                      // border:OutlineInputBorder(borderSide: BorderSide(width: 1)),
                       hintText: "Student ID",
                       hintStyle: TextStyle(color: Colors.grey, fontSize: 18),
                     ),

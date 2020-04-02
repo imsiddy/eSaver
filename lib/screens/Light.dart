@@ -123,8 +123,9 @@ class _LightsState extends State<Lights> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: Text("Main")),
+        appBar: AppBar(title: Text("Components")),
         body: Container(
+          margin: EdgeInsets.all(15),
           color: Color(0xfff5f5f5),
           child: Padding(
             padding: EdgeInsets.all(8.0),
@@ -142,8 +143,8 @@ class _LightsState extends State<Lights> {
                 ),
                 Divider(
                   color: Colors.blue,
-                  indent: 25.0,
-                  endIndent: 25.0,
+                  // indent: 25.0,
+                  // endIndent: 25.0,
                   height: 25,
                   thickness: 5,
                 ),
@@ -199,7 +200,12 @@ class _LightsState extends State<Lights> {
                                               },
                                             );
                                             print(snapshot.data[index].is_high);
-                                            _getStatus(snapshot.data[index].connection_url,value,snapshot.data[index].connection_pin);
+                                            _getStatus(
+                                                snapshot
+                                                    .data[index].connection_url,
+                                                value,
+                                                snapshot.data[index]
+                                                    .connection_pin);
                                             print("main file data be here");
                                           },
                                           activeTrackColor:

@@ -47,7 +47,7 @@ class _LightsState extends State<Lights> {
 
   Future<List<Connection>> _getUsers() async {
     String _token = await getToken();
-    print('Token $_token');
+    // print('Token $_token');
     var response = await http.get(
         Uri.encodeFull('https://smartboi.herokuapp.com/api/location/$id'),
         headers: {
@@ -62,7 +62,7 @@ class _LightsState extends State<Lights> {
 
     for (var u in jsonData) {
       Connection connection = Connection(
-          u['id'], u['connection_name'], u['connection_pin'], u['is_high']);
+          u['id'], u['connection_name'], u['connection_pin'],u['connection_url'], u['is_high']);
       connections.add(connection);
     }
     return connections;
@@ -73,7 +73,7 @@ class _LightsState extends State<Lights> {
     String status;
     if (is_high == true) {
       return await http.get(
-        Uri.encodeFull('https://465d3a08.ngrok.io/on/$connection_pin'),
+        Uri.encodeFull('${connenctin_url}on/$connection_pin'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
@@ -82,7 +82,7 @@ class _LightsState extends State<Lights> {
       // status = 'on';
     } else {
       return await http.get(
-        Uri.encodeFull('https://465d3a08.ngrok.io/off/$connection_pin'),
+        Uri.encodeFull('${connenctin_url}off/$connection_pin'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
@@ -90,7 +90,7 @@ class _LightsState extends State<Lights> {
       );
       // status = 'off';
     }
-    // return await http.get(
+    // return await http.get( call me from any other device
     //     Uri.encodeFull('https://465d3a08.ngrok.io/on/26'),
     //     headers: {
     //       'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ class _LightsState extends State<Lights> {
                                 shrinkWrap: true,
                                 itemCount: snapshot.data.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  print(index);
+                                  // print(index);
 
                                   return Column(
                                     children: <Widget>[
@@ -190,8 +190,7 @@ class _LightsState extends State<Lights> {
                                             );
                                             setState(
                                               () {
-                                                value = snapshot
-                                                    .data[index].is_high;
+                                                // value = snapshot.data[index].is_high;
                                                 updateNotes(
                                                     snapshot.data[index].id,
                                                     note);

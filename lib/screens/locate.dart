@@ -62,28 +62,30 @@ class _LocateState extends State<Locate> {
               tooltip: 'Confirm Sign Out',
               onPressed: () {
                 showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                          title: Text('Sign out'),
-                          content: Text('Would you like to sign out?'),
-                          actions: <Widget>[
-                            FlatButton(
-                              child: Text('Cancel'),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                            FlatButton(
-                                child: Text('Yes'),
-                                onPressed: () {
-                                  _setToken(null);
-                                  Navigator.pop(context);
-                                  Navigator.pop(context);
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) => LoginScreen()));
-                                })
-                          ],
-                        ));
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text('Sign out'),
+                    content: Text('Would you like to sign out?'),
+                    actions: <Widget>[
+                      FlatButton(
+                        child: Text('Cancel'),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      FlatButton(
+                        child: Text('Yes'),
+                        onPressed: () {
+                          _setToken(null);
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LoginScreen()));
+                        },
+                      )
+                    ],
+                  ),
+                );
               },
             )
           ],
@@ -106,7 +108,6 @@ class _LocateState extends State<Locate> {
                                 "Hello,",
                                 style: TextStyle(fontSize: 30),
                               ),
-                              
                             ],
                           ),
                         )),
@@ -159,73 +160,67 @@ class _LocateState extends State<Locate> {
                       ),
                       elevation: 10.0,
                       child: FutureBuilder(
-                          future: _getLocation(),
-                          builder:
-                              (BuildContext context, AsyncSnapshot snapshot) {
-                            if (snapshot.data == null) {
-                              return Container(
-                                child: Center(
-                                  child: Text('Loading...'),
-                                ),
-                              );
-                            } else {
-                              return ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: ScrollPhysics(),
-                                  itemCount: snapshot.data.length,
-                                  itemBuilder:
-                                      (BuildContext context, int index) {
-                                    
-                                    return Column(
-                                      children: <Widget>[
-                                        ListTile(
-                                          leading:
-                                              Icon(Icons.computer, size: 25),
-                                          title: Text(snapshot
-                                              .data[index].location_name),
-                                          trailing: IconButton(
-                                              icon: Icon(isAdmin
-                                                  ? Icons.person_add
-                                                  : Icons.chevron_right),
-                                              onPressed: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) => isAdmin
-                                                          ? Permissions(
-                                                              snapshot
-                                                                  .data[index]
-                                                                  .id,
-                                                              snapshot
-                                                                  .data[index]
-                                                                  .location_name)
-                                                          : Lights(
-                                                              snapshot
-                                                                  .data[index]
-                                                                  .id,
-                                                              snapshot
-                                                                  .data[index]
-                                                                  .location_name)),
-                                                );
-                                              }),
-                                          onTap: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => Lights(
-                                                    snapshot.data[index].id,
-                                                    snapshot.data[index]
-                                                        .location_name),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  });
-                            }
-                          }),
-                    )
+                        future: _getLocation(),
+                        builder:
+                            (BuildContext context, AsyncSnapshot snapshot) {
+                          if (snapshot.data == null) {
+                            return Container(
+                              child: Center(
+                                child: Text('Loading...'),
+                              ),
+                            );
+                          } else {
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: ScrollPhysics(),
+                              itemCount: snapshot.data.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return Column(
+                                  children: <Widget>[
+                                    ListTile(
+                                      leading: Icon(Icons.computer, size: 25),
+                                      title: Text(
+                                          snapshot.data[index].location_name),
+                                      trailing: IconButton(
+                                        icon: Icon(isAdmin
+                                            ? Icons.person_add
+                                            : Icons.chevron_right),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => isAdmin
+                                                    ? Permissions(
+                                                        snapshot.data[index].id,
+                                                        snapshot.data[index]
+                                                            .location_name)
+                                                    : Lights(
+                                                        snapshot.data[index].id,
+                                                        snapshot.data[index]
+                                                            .location_name)),
+                                          );
+                                        },
+                                      ),
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => Lights(
+                                                snapshot.data[index].id,
+                                                snapshot
+                                                    .data[index].location_name),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),

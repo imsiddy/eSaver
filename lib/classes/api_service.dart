@@ -3,28 +3,24 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<String> getToken() async {
-    SharedPreferences _prefs = await SharedPreferences.getInstance();
-    print(_prefs.getString('token').toString());
-    return _prefs.getString('token').toString();
-  }
+  SharedPreferences _prefs = await SharedPreferences.getInstance();
+  print(_prefs.getString('token').toString());
+  return _prefs.getString('token').toString();
+}
+
 class ApiService {
   static String url = "https://smartboi.herokuapp.com/api/";
 
   static Future<dynamic> getList(String token) async {
     try {
-      final response =
-          await http.get(Uri.encodeFull('${url}user'), headers: {
-        'Authorization': 'Token $token'
-      });
-      return(response.body);
-        //return (response.body.toString());
-      
+      final response = await http.get(Uri.encodeFull('${url}user'),
+          headers: {'Authorization': 'Token $token'});
+      return (response.body);
     } catch (ex) {
       return null;
     }
   }
 
-  
   static Future<dynamic> loginPost(Map<String, String> loginCred) async {
     try {
       final response = await http.post(
@@ -35,8 +31,6 @@ class ApiService {
 
       if (response.body.contains('token')) {
         print(response.body);
-        // SharedPreferences prefs = await SharedPreferences.getInstance();
-        // prefs?.setBool("isLoggedIn", true);
         return (json.decode(response.body)['token']);
       } else {
         print('Invalid Cred');
@@ -61,5 +55,4 @@ class ApiService {
     var jsonData = json.decode(response.body)['is_admin'];
     return jsonData;
   }
-
 }

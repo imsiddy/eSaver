@@ -47,7 +47,6 @@ class _LightsState extends State<Lights> {
 
   Future<List<Connection>> _getUsers() async {
     String _token = await getToken();
-    // print('Token $_token');
     var response = await http.get(
         Uri.encodeFull('https://smartboi.herokuapp.com/api/location/$id'),
         headers: {
@@ -71,32 +70,25 @@ class _LightsState extends State<Lights> {
   Future _getStatus(
       String connenctin_url, bool is_high, int connection_pin) async {
     String status;
+        String _token = await getToken();
+
     if (is_high == true) {
       return await http.get(
         Uri.encodeFull('${connenctin_url}on/$connection_pin'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+          'Authorization': 'Token $_token',
         },
       );
-      // status = 'on';
     } else {
       return await http.get(
         Uri.encodeFull('${connenctin_url}off/$connection_pin'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
+          'Authorization': 'Token $_token',
         },
       );
-      // status = 'off';
     }
-    // return await http.get( call me from any other device
-    //     Uri.encodeFull('https://465d3a08.ngrok.io/on/26'),
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Authorization': 'Token 952c3f823d3c9926885490ddd825a11646832f73',
-    //     },
-    //   );
   }
 
   Future<APIResponse<bool>> updateNotes(int ids, Changes item) async {
@@ -143,8 +135,6 @@ class _LightsState extends State<Lights> {
                 ),
                 Divider(
                   color: Colors.blue,
-                  // indent: 25.0,
-                  // endIndent: 25.0,
                   height: 25,
                   thickness: 5,
                 ),
@@ -190,12 +180,9 @@ class _LightsState extends State<Lights> {
                                             );
                                             setState(
                                               () {
-                                                // value = snapshot.data[index].is_high;
                                                 updateNotes(
                                                     snapshot.data[index].id,
                                                     note);
-
-                                                //  _likeVisible1 = value;
                                               },
                                             );
                                             print(snapshot.data[index].is_high);

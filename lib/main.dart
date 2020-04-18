@@ -10,6 +10,7 @@ Future<void> main() async {
   final isAdmin = prefs.getBool('is_admin');
 
   runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
     title: 'ESaver',
     home: _token == null ? LoginScreen() : Locate(isAdmin),
   ));

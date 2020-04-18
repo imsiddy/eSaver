@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:esaver/utilities/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Lights extends StatefulWidget {
@@ -18,14 +18,12 @@ class Lights extends StatefulWidget {
   _LightsState createState() => _LightsState(this.id, this.location);
 }
 
-bool _likeVisible1 = true;
-bool _likeVisible2 = true;
 List<User> grantedUsers;
 
 class _LightsState extends State<Lights> {
   int id;
   String location;
-  String grantUserId = '17ce084';
+  final scaffoldKey = GlobalKey<ScaffoldState>();
 
   _LightsState(this.id, this.location);
   Future<String> getToken() async {
@@ -33,19 +31,14 @@ class _LightsState extends State<Lights> {
     return _prefs.getString('token');
   }
 
-  _setToken(String token) async {
-    final _prefs = await SharedPreferences.getInstance();
-    await _prefs.setString('token', token);
-  }
-
   void initState() {
     super.initState();
     setState(() {
-      _getUsers();
+      _getConnections();
     });
   }
 
-  Future<List<Connection>> _getUsers() async {
+  Future<List<Connection>> _getConnections() async {
     String _token = await getToken();
     var response = await http.get(
         Uri.encodeFull('https://smartboi.herokuapp.com/api/location/$id'),
@@ -101,9 +94,9 @@ class _LightsState extends State<Lights> {
               'Authorization': 'Token $_token',
             },
             body: json.encode(item.toJson()))
-        .then((data) {
+        .then((data) async {
       if (data.statusCode == 204) {
-        _getUsers();
+        await _getConnections();
         return APIResponse<bool>(data: true);
       }
       return APIResponse<bool>(error: true, errorMessage: 'An error occured');
@@ -115,6 +108,7 @@ class _LightsState extends State<Lights> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        key: scaffoldKey,
         appBar: AppBar(title: Text("Components")),
         body: Container(
           margin: EdgeInsets.all(15),
@@ -146,7 +140,7 @@ class _LightsState extends State<Lights> {
                     ),
                     elevation: 10.0,
                     child: FutureBuilder(
-                        future: _getUsers(),
+                        future: _getConnections(),
                         builder:
                             (BuildContext context, AsyncSnapshot snapshot) {
                           if (snapshot.data == null) {
@@ -185,6 +179,7 @@ class _LightsState extends State<Lights> {
                                                     note);
                                               },
                                             );
+                                            displaySnackBar(scaffoldKey, 'Successful!', 'OK');
                                             print(snapshot.data[index].is_high);
                                             _getStatus(
                                                 snapshot

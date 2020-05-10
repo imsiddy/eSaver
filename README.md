@@ -1,16 +1,32 @@
-# esaver
+# eSaver
 
-A new Flutter application.
+*Too much wastage of electricity in the computer labs and classrooms? Use eSaver to control electrical components smartly!*
 
-## Getting Started
+Our prototype solution has been built for controlling the LEDs right now, and we can similarly include other electrical components. It assumes the scenario of colleges or similar offices where there are two privileged classes: at higher level, Faculties/Employers who have the access to manage permissions, and Students/Employees who can access the components if they are permitted by their higher class. 
 
-This project is a starting point for a Flutter application.
+## Technologies used
 
-A few resources to get you started if this is your first Flutter project:
+Flutter
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+Django Rest Framework 
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Computer Vision 
+
+Internet of Things
+
+## Application Features
+
+* Access available electrical components at locations permitted to the user
+
+* If the user is admin, can manage access permissions of the locations, i.e. give or take access at any moment
+
+*Automatic turning on and off of the electrical components occurs based on the presence of people at that particular location. If accessed via mobile app, it has higher priority than automatic detection.*
+
+## Android screenshots
+
+<img src="screenshots/login_screen.jpg" height="300em" /> <img src="screenshots/faculty_home_screen.jpg" height="300em" /> <img src="screenshots/manage_permissions_screen.jpg" height="300em" /> <img src="screenshots/components_screen.jpg" height="300em" /> <img src="screenshots/student_home_screen.jpg" height="300em" />
+
+## Demo of the project
+
+<img src="screenshots/accessing_via_app.png" height="300em" /> <img src="screenshots/automatic_detection_demo.jpeg" height="300em" />
+
